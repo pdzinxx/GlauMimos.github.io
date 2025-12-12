@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BOLSA GLAUMIMOS</title>
+<style>
+  /* Fonte básica */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+  :root{
+    --pink:#ff8ac9;
+    --soft-pink:#ffd6ea;
+    --mint:#9df3c4;
+    --mint-dark:#86e6b6;
+    --bg:#fff0f7;
+    --card:#fff6fb;
+    --accent:#ff69b4;
+    --shadow: 0 8px 30px rgba(0,0,0,0.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(180deg,var(--bg),#fffafc);
+    margin:0;padding:0;color:#333;
+  }
+  header{
+    background: linear-gradient(90deg,var(--pink),var(--mint));
+    padding:28px;text-align:center;color:#fff;font-size:26px;font-weight:700;letter-spacing:1px;box-shadow:var(--shadow);
+  }
+
+  .container{display:flex;gap:22px;padding:26px;align-items:flex-start;justify-content:center}
+  .produtos,.carrinho{background:var(--card);padding:22px;border-radius:18px;width:460px;box-shadow:var(--shadow);transition:transform .3s}
+
+  h2{color:var(--accent);margin:0 0 12px 0}
+
+  /* ITEM CARD - floating (estilo B) + micro animations (estilo D) */
+  .item-card{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,#fff,#fff6fb);border:1px solid rgba(255,182,203,0.5);padding:12px;border-radius:14px;margin-bottom:16px;box-shadow:0 6px 18px rgba(255,150,200,0.12);transform-origin:center;animation:cardIn .6s ease both}
+  .item-card:hover{transform:translateY(-6px)}
+  .item-card img{width:78px;height:78px;border-radius:12px;object-fit:cover;border:4px solid #ffe8f5;cursor:pointer;transition:transform .35s}
+  .item-card img:hover{transform:scale(1.06) rotate(-2deg)}
+
+  .item-info{flex:1;padding:0 14px}
+  .item-info strong{display:block;font-size:16px}
+  .price{color:#b94b7a;margin-top:6px;font-weight:600}
+
+  /* quantidade com botões + e - bonitos */
+  .qty-box{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .qty-btn{background:linear-gradient(180deg,var(--pink),#ff9ccb);border:none;padding:6px 10px;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(255,140,180,0.18);transition:transform .12s}
+  .qty-btn:active{transform:scale(.96)}
+  .qty-num{min-width:30px;text-align:center;font-weight:600}
+
+  /* botão principal - respira (pulse) */
+  .add-btn{background:linear-gradient(90deg,var(--mint),var(--mint-dark));border:none;padding:10px 16px;border-radius:12px;color:#084;cursor:pointer;font-weight:700;box-shadow:0 8px 20px rgba(140,230,180,0.25);transition:transform .18s}
+  .add-btn:hover{transform:translateY(-4px)}
+  .add-btn:focus{outline:none}
+
+  /* animações: floating e bounce (combinação B+D) */
+  @keyframes floaty{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+  @keyframes bounceIn{0%{transform:scale(.9)}60%{transform:scale(1.04)}100%{transform:scale(1)}}
+  @keyframes cardIn{0%{opacity:0;transform:translateY(10px) scale(.98)}100%{opacity:1;transform:none}}
+
+  /* aplicar leve flutuação aos cards (sutil) */
+  .item-card{animation:floaty 6s ease-in-out infinite both}
+
+  /* carrinho slide-in (entra da direita) */
+  .carrinho{transform:translateX(10px)}
+  .carrinho.active{transform:translateX(0);transition:transform .5s cubic-bezier(.2,.9,.2,1)}
+
+  /* lista no carrinho */
+  #lista .cart-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;margin-bottom:10px;background:linear-gradient(180deg,#fff,#fff9fb);border:1px solid #ffe6f2;animation:cartRow .45s both}
+  @keyframes cartRow{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .cart-row .remover{background:linear-gradient(90deg,#ff7a8a,#ff6e6e);border:none;padding:8px 10px;border-radius:10px;color:white;cursor:pointer}
+
+  /* total */
+  #total{font-size:20px;margin-top:10px;font-weight:700;color:#6ac59c}
+
+  /* form inputs */
+  .extra-box{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  input[type="text"],input[type="file"]{padding:10px;border-radius:10px;border:2px solid rgba(255,210,230,.8);background:#fff;}
+
+  /* popup imagem com animação giratória leve */
+  #popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;justify-content:center;align-items:center}
+  #popup img{width:420px;border-radius:16px;transform:rotate(0);animation:popupOpen .45s both}
+  @keyframes popupOpen{0%{opacity:0;transform:scale(.9) rotate(-6deg)}100%{opacity:1;transform:scale(1) rotate(0deg)}}
+
+  /* mini coração ao adicionar (kawaii) */
+  .heart{position:fixed;width:36px;height:36px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);animation:heartAnim .9s cubic-bezier(.2,.7,.2,1) forwards}
+  .heart::before{content:'❤';display:block;color:#ff6ea6;font-size:24px;line-height:36px;text-align:center}
+  @keyframes heartAnim{0%{opacity:0;transform:translate(-50%,-50%) scale(.6) translateY(0)}30%{opacity:1;transform:translate(-50%,-120%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-220%) scale(.8)}}
+
+  /* pequenas responsividades */
+  @media(max-width:980px){.container{flex-direction:column;align-items:center}.produtos,.carrinho{width:94%;}}
+</style>
+</head>
+<body>
+<header>BOLSA GLAUMIMOS ✨</header>
+
+<div class="container">
+  <div class="produtos">
+    <h2>Produtos</h2>
+
+    <!-- Produto A -->
+    <div class="item-card" id="cardA">
+      <img src="bolsa1.jpeg" alt="Produto A" onclick="abrirFoto(this.src)">
+      <div class="item-info">
+        <strong>Produto A</strong>
+        <div class="price">R$ 20</div>
+        <div class="qty-box">
+          <button class="qty-btn" onclick="alterarQtd('A', -1)">-</button>
+          <div class="qty-num" id="qtdA">1</div>
+          <button class="qty-btn" onclick="alterarQtd('A', 1)">+</button>
+        </div>
+      </div>
+      <button class="add-btn" onclick="adicionarAnim('Produto A',20,'A', event)">Adicionar</button>
+    </div>
+
+    <!-- Produto B -->
+    <div class="item-card" id="cardB">
+      <img src="bolsa2.jpeg" alt="Produto B" onclick="abrirFoto(this.src)">
+      <div class="item-info">
+        <strong>Produto B</strong>
+        <div class="price">R$ 35</div>
+        <div class="qty-box">
+          <button class="qty-btn" onclick="alterarQtd('B', -1)">-</button>
+          <div class="qty-num" id="qtdB">1</div>
+          <button class="qty-btn" onclick="alterarQtd('B', 1)">+</button>
+        </div>
+      </div>
+      <button class="add-btn" onclick="adicionarAnim('Produto B',35,'B', event)">Adicionar</button>
+    </div>
+
+  </div>
+
+  <div class="carrinho" id="cartBox">
+    <h2>Carrinho</h2>
+    <div id="lista"></div>
+    <div id="total">Total: R$ 0</div>
+
+    <div class="extra-box">
+      <label><strong>Tema desejado:</strong></label>
+      <input type="text" id="tema" placeholder="Ex: festa unicornio rosa">
+
+      <label><strong>Enviar imagem de referência (cliente anexará no WhatsApp):</strong></label>
+      <input type="file" id="imagemRef" accept="image/*">
+    </div>
+
+    <br>
+    <button onclick="enviarWhatsApp()">Finalizar Pedido</button>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div id="popup" onclick="fecharFoto()"><img id="popupImg"></div>
+
+<script>
+let carrinho = [];
+let quantidades = { A:1, B:1 };
+
+function alterarQtd(id, delta){
+  quantidades[id] = Math.max(1, (quantidades[id]||1) + delta);
+  document.getElementById('qtd'+id).innerText = quantidades[id];
+}
+
+function adicionar(nome, preco, id){
+  let qtd = quantidades[id]||1;
+  carrinho.push({nome, preco, qtd});
+  atualizar();
+  document.getElementById('cartBox').classList.add('active');
+}
+
+// função que adiciona e mostra animação de coração kawaii
+function adicionarAnim(nome, preco, id, ev){
+  adicionar(nome, preco, id);
+  // criar coração na posição do clique
+  const heart = document.createElement('div');
+  heart.className = 'heart';
+  document.body.appendChild(heart);
+  // posiciona no local do clique
+  const x = ev.clientX; const y = ev.clientY;
+  heart.style.left = x + 'px';
+  heart.style.top = y + 'px';
+  // remove depois da animação
+  setTimeout(()=> heart.remove(), 1000);
+  // micro-salto nos cards (bounce)
+  const card = document.getElementById('card'+id);
+  card.animate([
+    { transform: 'translateY(0) scale(1)' },
+    { transform: 'translateY(-10px) scale(1.03)' },
+    { transform: 'translateY(0) scale(1)' }
+  ], { duration: 520, easing: 'cubic-bezier(.2,.7,.2,1)' });
+}
+
+function remover(index){
+  carrinho.splice(index,1);
+  atualizar();
+}
+
+function atualizar(){
+  const lista = document.getElementById('lista'); lista.innerHTML='';
+  let total=0;
+  carrinho.forEach((it,i)=>{
+    total += it.preco * it.qtd;
+    const row = document.createElement('div');
+    row.className='cart-row';
+    row.innerHTML = `<div>${it.nome} (x${it.qtd}) - R$ ${it.preco * it.qtd}</div>`;
+    const btn = document.createElement('button'); btn.className='remover'; btn.innerText='Remover';
+    btn.onclick = ()=>{ remover(i); };
+    row.appendChild(btn);
+    lista.appendChild(row);
+  });
+  document.getElementById('total').innerText = `Total: R$ ${total}`;
+}
+
+function enviarWhatsApp(){
+  if(carrinho.length===0) return alert('Carrinho vazio!');
+  const tema = document.getElementById('tema').value || 'Nenhum';
+  const img = document.getElementById('imagemRef').files[0];
+  let msg = '📌 *Novo Pedido*%0A%0A';
+  carrinho.forEach(it=> msg += `• ${it.nome} (x${it.qtd}) — R$ ${it.preco * it.qtd}%0A`);
+  const total = carrinho.reduce((s,it)=> s + it.preco*it.qtd,0);
+  msg += `%0ATotal: R$ ${total}%0A`;
+  msg += `%0ATema: ${tema}%0A`;
+  msg += `%0AImagem: Cliente anexará manualmente no WhatsApp.%0A`;
+  const numero = '5585998319444';
+  window.open(`https://wa.me/${numero}?text=${msg}`);
+}
+
+// popup
+function abrirFoto(src){ document.getElementById('popupImg').src = src; document.getElementById('popup').style.display='flex'; }
+function fecharFoto(){ document.getElementById('popup').style.display='none'; }
+</script>
+</body>
+</html>
